@@ -5,7 +5,8 @@ import { Container, AppBar, Toolbar, Typography, Button, Box } from "@mui/materi
 import Dashboard from "./components/dashboard";
 import Consultation from "./components/consultation";
 
-const socket = io("http://localhost:5000");
+// const socket = io("http://localhost:5000");
+const socket = io("https://sweatsensorbackend.vercel.app/");
 
 function App() {
   const [sweatData, setSweatData] = useState({
