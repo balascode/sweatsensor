@@ -14,48 +14,47 @@ function App() {
   });
 
   useEffect(() => {
-    // Configure socket connection with more detailed options
+    // Comprehensive socket configuration
     const socket = io("https://sweatsensorbackend.vercel.app", {
-      // Specify the path explicitly if needed
-      path: "/socket.io/",
-      
-      // Enable CORS and credentials
-      withCredentials: true,
-      
-      // Specify transport methods
-      transports: ['websocket', 'polling'],
-      
-      // Optional: reconnection settings
+      path: "/socket.io/", // Match server's socket path
+      forceNew: true,      // Create a new connection each time
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
+      timeout: 20000,      // Connection timeout
+      transports: ['websocket', 'polling'], // Specify transports
+      withCredentials: true,
     });
 
+    // Extensive logging and error handling
     socket.on("connect", () => {
-      console.log("Socket connected successfully at:", socket.io.uri);
-    });
-
-    socket.on("sweatData", (data) => {
-      console.log("Received sweat data:", data);
-      setSweatData(data);
+      console.log("Socket Connected:", socket.id);
+      console.log("Socket Connected URL:", socket.io.uri);
     });
 
     socket.on("connect_error", (error) => {
-      console.error("Connection error:", error);
+      console.error("❌ Connection Error Details:", {
+        message: error.message,
+        name: error.name,
+        stack: error.stack
+      });
     });
 
-    socket.on("disconnect", () => {
-      console.log("Socket disconnected");
+    socket.on("disconnect", (reason) => {
+      console.log("Socket Disconnected. Reason:", reason);
     });
 
+    socket.on("sweatData", (data) => {
+      console.log("✅ Received Sweat Data:", data);
+      setSweatData(data);
+    });
+
+    // Cleanup function
     return () => {
-      socket.off("sweatData");
-      socket.off("connect");
-      socket.off("disconnect");
-      socket.off("connect_error");
       socket.disconnect();
     };
   }, []);
+
 
   return (
     <Router>
