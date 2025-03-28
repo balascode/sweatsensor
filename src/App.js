@@ -14,33 +14,38 @@ function App() {
   });
 
   useEffect(() => {
-    // Advanced socket configuration for Vercel deployment
+    // Advanced socket configuration
     const socket = io("https://sweatsensorbackend.vercel.app", {
+      // Critical configuration options
       path: "/socket.io/",
       forceNew: true,
       reconnection: true,
       reconnectionAttempts: 10,
-      reconnectionDelay: 1000,
-      timeout: 30000,
+      reconnectionDelay: 2000,
+      timeout: 40000,
+      
+      // Fallback transport methods
       transports: ['websocket', 'polling'],
-      withCredentials: false, // Set to false if cross-origin
+      
+      // Cross-origin handling
+      withCredentials: false,
     });
 
     // Comprehensive connection lifecycle logging
     socket.io.on("reconnect_attempt", (attempt) => {
-      console.log(`Attempting to reconnect (Attempt ${attempt})`);
+      console.log(`🔄 Reconnection Attempt: ${attempt}`);
     });
 
     socket.on("connect", () => {
-      console.log("🟢 Socket Connected:", {
+      console.log("🟢 Socket Connected", {
         id: socket.id,
         connected: socket.connected,
-        url: socket.io.uri
+        transport: socket.io.engine.transport.name
       });
     });
 
     socket.on("connect_error", (error) => {
-      console.error("🔴 Detailed Connection Error:", {
+      console.error("🔴 Connection Error:", {
         name: error.name,
         message: error.message,
         stack: error.stack
@@ -48,18 +53,18 @@ function App() {
     });
 
     socket.on("disconnect", (reason) => {
-      console.log("🔵 Socket Disconnected:", {
+      console.log("🔵 Socket Disconnected", {
         reason: reason,
         reconnecting: socket.io.reconnecting
       });
     });
 
     socket.on("sweatData", (data) => {
-      console.log("📊 Received Sweat Data:", data);
+      console.log("📊 Sweat Data Received:", data);
       setSweatData(data);
     });
 
-    // Cleanup on component unmount
+    // Cleanup on unmount
     return () => {
       socket.disconnect();
     };
