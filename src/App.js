@@ -6,7 +6,7 @@ import Dashboard from "./components/dashboard";
 import Consultation from "./components/consultation";
 
 // const socket = io("http://localhost:5000");
-const socket = io("https://sweatsensorbackend.vercel.app/");
+const socket = io("https://sweatsensorbackend.vercel.app");
 
 function App() {
   const [sweatData, setSweatData] = useState({
@@ -17,11 +17,32 @@ function App() {
   });
 
   useEffect(() => {
+    // Log the full socket URL
+    console.log("Connecting to socket at:", socket.io.uri);
+  
+    // Log the socket path being used
+    console.log("Socket path:", socket.io.opts.path);
+  
+    socket.on("connect", () => {
+      console.log("Socket connected successfully at:", socket.io.uri);
+    });
+  
     socket.on("sweatData", (data) => {
+      console.log("Received sweat data:", data);
       setSweatData(data);
     });
-    return () => socket.off("sweatData");
+  
+    socket.on("disconnect", () => {
+      console.log("Socket disconnected");
+    });
+  
+    return () => {
+      socket.off("sweatData");
+      socket.off("connect");
+      socket.off("disconnect");
+    };
   }, []);
+  
 
   return (
     <Router>
