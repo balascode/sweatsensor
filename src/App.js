@@ -5,10 +5,6 @@ import { Container, AppBar, Toolbar, Typography, Button, Box } from "@mui/materi
 import Dashboard from "./components/dashboard";
 import Consultation from "./components/consultation";
 
-// const socket = io("http://localhost:5000");
-const socket = io("https://sweatsensorbackend.vercel.app");
-
-
 function App() {
   const [sweatData, setSweatData] = useState({
     sodium: 0,
@@ -18,32 +14,48 @@ function App() {
   });
 
   useEffect(() => {
-    // Log the full socket URL
-    console.log("Connecting to socket at:", socket.io.uri);
-  
-    // Log the socket path being used
-    console.log("Socket path:", socket.io.opts.path);
-  
+    // Configure socket connection with more detailed options
+    const socket = io("https://sweatsensorbackend.vercel.app", {
+      // Specify the path explicitly if needed
+      path: "/socket.io/",
+      
+      // Enable CORS and credentials
+      withCredentials: true,
+      
+      // Specify transport methods
+      transports: ['websocket', 'polling'],
+      
+      // Optional: reconnection settings
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+    });
+
     socket.on("connect", () => {
       console.log("Socket connected successfully at:", socket.io.uri);
     });
-  
+
     socket.on("sweatData", (data) => {
       console.log("Received sweat data:", data);
       setSweatData(data);
     });
-  
+
+    socket.on("connect_error", (error) => {
+      console.error("Connection error:", error);
+    });
+
     socket.on("disconnect", () => {
       console.log("Socket disconnected");
     });
-  
+
     return () => {
       socket.off("sweatData");
       socket.off("connect");
       socket.off("disconnect");
+      socket.off("connect_error");
+      socket.disconnect();
     };
   }, []);
-  
 
   return (
     <Router>
