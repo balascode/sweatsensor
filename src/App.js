@@ -14,47 +14,56 @@ function App() {
   });
 
   useEffect(() => {
-    // Comprehensive socket configuration
+    // Advanced socket configuration for Vercel deployment
     const socket = io("https://sweatsensorbackend.vercel.app", {
-      path: "/socket.io/", // Match server's socket path
-      forceNew: true,      // Create a new connection each time
+      path: "/socket.io/",
+      forceNew: true,
       reconnection: true,
-      reconnectionAttempts: 5,
+      reconnectionAttempts: 10,
       reconnectionDelay: 1000,
-      timeout: 20000,      // Connection timeout
-      transports: ['websocket', 'polling'], // Specify transports
-      withCredentials: true,
+      timeout: 30000,
+      transports: ['websocket', 'polling'],
+      withCredentials: false, // Set to false if cross-origin
     });
 
-    // Extensive logging and error handling
+    // Comprehensive connection lifecycle logging
+    socket.io.on("reconnect_attempt", (attempt) => {
+      console.log(`Attempting to reconnect (Attempt ${attempt})`);
+    });
+
     socket.on("connect", () => {
-      console.log("Socket Connected:", socket.id);
-      console.log("Socket Connected URL:", socket.io.uri);
+      console.log("🟢 Socket Connected:", {
+        id: socket.id,
+        connected: socket.connected,
+        url: socket.io.uri
+      });
     });
 
     socket.on("connect_error", (error) => {
-      console.error("❌ Connection Error Details:", {
-        message: error.message,
+      console.error("🔴 Detailed Connection Error:", {
         name: error.name,
+        message: error.message,
         stack: error.stack
       });
     });
 
     socket.on("disconnect", (reason) => {
-      console.log("Socket Disconnected. Reason:", reason);
+      console.log("🔵 Socket Disconnected:", {
+        reason: reason,
+        reconnecting: socket.io.reconnecting
+      });
     });
 
     socket.on("sweatData", (data) => {
-      console.log("✅ Received Sweat Data:", data);
+      console.log("📊 Received Sweat Data:", data);
       setSweatData(data);
     });
 
-    // Cleanup function
+    // Cleanup on component unmount
     return () => {
       socket.disconnect();
     };
   }, []);
-
 
   return (
     <Router>
