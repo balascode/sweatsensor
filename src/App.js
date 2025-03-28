@@ -5,6 +5,9 @@ import { Container, AppBar, Toolbar, Typography, Button, Box } from "@mui/materi
 import Dashboard from "./components/dashboard";
 import Consultation from "./components/consultation";
 
+// const socket = io("http://localhost:5000");
+const socket = io("https://sweatsensorbackend.vercel.app/");
+
 function App() {
   const [sweatData, setSweatData] = useState({
     sodium: 0,
@@ -14,72 +17,32 @@ function App() {
   });
 
   useEffect(() => {
-    // Advanced socket configuration with fallback mechanisms
-    const socket = io("https://sweatsensorbackend.vercel.app", {
-      transports: ['websocket', 'polling'],
-      forceNew: true,
-      reconnection: true,
-      timeout: 10000
+    // Log the full socket URL
+    console.log("Connecting to socket at:", socket.io.uri);
+  
+    // Log the socket path being used
+    console.log("Socket path:", socket.io.opts.path);
+  
+    socket.on("connect", () => {
+      console.log("Socket connected successfully at:", socket.io.uri);
     });
-    // const socket = io("https://sweatsensorbackend.vercel.app", {
-    //   // Comprehensive connection options
-    //   forceNew: true,
-    //   reconnection: true,
-    //   reconnectionAttempts: 10,
-    //   reconnectionDelay: 2000,
-    //   timeout: 40000,
-      
-    //   // Explicit transport configuration
-    //   transports: ['websocket', 'polling'],
-      
-    //   // Cross-origin handling
-    //   withCredentials: false,
-      
-    //   // Additional connection parameters
-    //   extraHeaders: {
-    //     'Access-Control-Allow-Origin': '*'
-    //   }
-    // });
-
-    // Comprehensive connection lifecycle management
-    const handleConnect = () => {
-      console.log("🟢 Socket Connected", {
-        id: socket.id,
-        connected: socket.connected,
-        transport: socket.io.engine.transport.name
-      });
+  
+    socket.on("sweatData", (data) => {
+      console.log("Received sweat data:", data);
+      setSweatData(data);
+    });
+  
+    socket.on("disconnect", () => {
+      console.log("Socket disconnected");
+    });
+  
+    return () => {
+      socket.off("sweatData");
+      socket.off("connect");
+      socket.off("disconnect");
     };
-
-    
-      // Optional: Implement custom reconnection logic
-      if (error.message.includes("websocket")) {
-        socket.io.opts.transports = ['polling'];
-        socket.connect();
-      }
-    });
-
-    const handleConnectError = (error) => {
-      console.error("🔴 Detailed Connection Error:", {
-        name: error.name,
-        message: error.message,
-        stack: error.stack,
-        type: typeof error
-      });
-    };
-
-
-
-    // Attach event listeners
-    socket.io.on("reconnect_attempt", handleReconnectAttempt);
-    socket.on("connect", handleConnect);
-    socket.on("connect_error", (error) => {
-      console.error("Detailed Connection Error:", {
-        name: error.name,
-        message: error.message,
-        stack: error.stack,
-        type: typeof error
-      });
-    });
+  }, []);
+  
 
   return (
     <Router>
