@@ -52,18 +52,32 @@ function App() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const socket = io("http://localhost:5000");
+  // const socket = io("http://localhost:5000");
+const socket = io("https://sweatsensorbackend.vercel.app/");
 
-  useEffect(() => {
-    socket.on("connect", () => console.log("Socket connected"));
-    socket.on("sweatData", (data) => setSweatData(data));
-    socket.on("disconnect", () => console.log("Socket disconnected"));
-    return () => {
-      socket.off("sweatData");
-      socket.off("connect");
-      socket.off("disconnect");
-    };
-  }, []);
+useEffect(() => {
+  console.log("Connecting to socket at:", socket.io.uri);
+  console.log("Socket path:", socket.io.opts.path);
+
+  socket.on("connect", () => {
+    console.log("Socket connected successfully at:", socket.io.uri);
+  });
+
+  socket.on("sweatData", (data) => {
+    console.log("Received sweat data:", data);
+    setSweatData(data);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Socket disconnected");
+  });
+
+  return () => {
+    socket.off("sweatData");
+    socket.off("connect");
+    socket.off("disconnect");
+  };
+}, []);
 
   // Theme creation
   const colorMode = useMemo(
