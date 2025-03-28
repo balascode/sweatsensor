@@ -14,44 +14,61 @@ function App() {
   });
 
   useEffect(() => {
-    // Advanced socket configuration
+    // Advanced socket configuration with fallback mechanisms
     const socket = io("https://sweatsensorbackend.vercel.app", {
-      // Critical configuration options
-      path: "/socket.io/",
+      // Comprehensive connection options
       forceNew: true,
       reconnection: true,
       reconnectionAttempts: 10,
       reconnectionDelay: 2000,
       timeout: 40000,
       
-      // Fallback transport methods
+      // Explicit transport configuration
       transports: ['websocket', 'polling'],
       
       // Cross-origin handling
       withCredentials: false,
+      
+      // Additional connection parameters
+      extraHeaders: {
+        'Access-Control-Allow-Origin': '*'
+      }
     });
 
-    // Comprehensive connection lifecycle logging
-    socket.io.on("reconnect_attempt", (attempt) => {
-      console.log(`🔄 Reconnection Attempt: ${attempt}`);
-    });
-
-    socket.on("connect", () => {
+    // Comprehensive connection lifecycle management
+    const handleConnect = () => {
       console.log("🟢 Socket Connected", {
         id: socket.id,
         connected: socket.connected,
         transport: socket.io.engine.transport.name
       });
-    });
+    };
 
-    socket.on("connect_error", (error) => {
-      console.error("🔴 Connection Error:", {
+    const handleConnectError = (error) => {
+      console.error("🔴 Detailed Connection Error:", {
         name: error.name,
         message: error.message,
-        stack: error.stack
+        stack: error.stack,
+        type: typeof error
       });
+    };
+
+    const handleReconnectAttempt = (attempt) => {
+      console.log(`🔄 Reconnection Attempt: ${attempt}`);
+    };
+
+    // Attach event listeners
+    socket.io.on("reconnect_attempt", handleReconnectAttempt);
+    socket.on("connect", handleConnect);
+    socket.on("connect_error", handleConnectError);
+
+    // Data handling
+    socket.on("sweatData", (data) => {
+      console.log("📊 Sweat Data Received:", data);
+      setSweatData(data);
     });
 
+    // Disconnect handling
     socket.on("disconnect", (reason) => {
       console.log("🔵 Socket Disconnected", {
         reason: reason,
@@ -59,13 +76,11 @@ function App() {
       });
     });
 
-    socket.on("sweatData", (data) => {
-      console.log("📊 Sweat Data Received:", data);
-      setSweatData(data);
-    });
-
     // Cleanup on unmount
     return () => {
+      // Remove event listeners
+      socket.off("connect", handleConnect);
+      socket.off("connect_error", handleConnectError);
       socket.disconnect();
     };
   }, []);
