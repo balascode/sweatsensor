@@ -16,24 +16,32 @@ function App() {
   useEffect(() => {
     // Advanced socket configuration with fallback mechanisms
     const socket = io("https://sweatsensorbackend.vercel.app", {
-      // Comprehensive connection options
-      forceNew: true,
-      reconnection: true,
-      reconnectionAttempts: 10,
-      reconnectionDelay: 2000,
-      timeout: 40000,
-      
-      // Explicit transport configuration
       transports: ['websocket', 'polling'],
-      
-      // Cross-origin handling
-      withCredentials: false,
-      
-      // Additional connection parameters
-      extraHeaders: {
-        'Access-Control-Allow-Origin': '*'
-      }
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      timeout: 20000,
+      secure: true
     });
+    // const socket = io("https://sweatsensorbackend.vercel.app", {
+    //   // Comprehensive connection options
+    //   forceNew: true,
+    //   reconnection: true,
+    //   reconnectionAttempts: 10,
+    //   reconnectionDelay: 2000,
+    //   timeout: 40000,
+      
+    //   // Explicit transport configuration
+    //   transports: ['websocket', 'polling'],
+      
+    //   // Cross-origin handling
+    //   withCredentials: false,
+      
+    //   // Additional connection parameters
+    //   extraHeaders: {
+    //     'Access-Control-Allow-Origin': '*'
+    //   }
+    // });
 
     // Comprehensive connection lifecycle management
     const handleConnect = () => {
@@ -44,6 +52,14 @@ function App() {
       });
     };
 
+    
+      // Optional: Implement custom reconnection logic
+      if (error.message.includes("websocket")) {
+        socket.io.opts.transports = ['polling'];
+        socket.connect();
+      }
+    });
+
     const handleConnectError = (error) => {
       console.error("🔴 Detailed Connection Error:", {
         name: error.name,
@@ -53,14 +69,18 @@ function App() {
       });
     };
 
-    const handleReconnectAttempt = (attempt) => {
-      console.log(`🔄 Reconnection Attempt: ${attempt}`);
-    };
+
 
     // Attach event listeners
     socket.io.on("reconnect_attempt", handleReconnectAttempt);
     socket.on("connect", handleConnect);
-    socket.on("connect_error", handleConnectError);
+    socket.on("connect_error", (error) => {
+      console.error("Connection Error:", {
+        message: error.message,
+        name: error.name,
+        stack: error.stack,
+        type: typeof error
+      });
 
     // Data handling
     socket.on("sweatData", (data) => {
