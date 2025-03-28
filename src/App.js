@@ -6,13 +6,8 @@ import Dashboard from "./components/dashboard";
 import Consultation from "./components/consultation";
 
 // const socket = io("http://localhost:5000");
-// const socket = io("https://sweatsensorbackend.vercel.app");
-const socket = io("https://sweatsensorbackend.vercel.app", {
-  withCredentials: true,
-  extraHeaders: {
-    "Access-Control-Allow-Origin": "https://sweatsensorbackend.vercel.app",
-  },
-});
+const socket = io("https://sweatsensorbackend.vercel.app");
+
 
 function App() {
   const [sweatData, setSweatData] = useState({
