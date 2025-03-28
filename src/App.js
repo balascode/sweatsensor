@@ -17,11 +17,9 @@ function App() {
     // Advanced socket configuration with fallback mechanisms
     const socket = io("https://sweatsensorbackend.vercel.app", {
       transports: ['websocket', 'polling'],
+      forceNew: true,
       reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-      timeout: 20000,
-      secure: true
+      timeout: 10000
     });
     // const socket = io("https://sweatsensorbackend.vercel.app", {
     //   // Comprehensive connection options
@@ -75,35 +73,13 @@ function App() {
     socket.io.on("reconnect_attempt", handleReconnectAttempt);
     socket.on("connect", handleConnect);
     socket.on("connect_error", (error) => {
-      console.error("Connection Error:", {
-        message: error.message,
+      console.error("Detailed Connection Error:", {
         name: error.name,
+        message: error.message,
         stack: error.stack,
         type: typeof error
       });
-
-    // Data handling
-    socket.on("sweatData", (data) => {
-      console.log("📊 Sweat Data Received:", data);
-      setSweatData(data);
     });
-
-    // Disconnect handling
-    socket.on("disconnect", (reason) => {
-      console.log("🔵 Socket Disconnected", {
-        reason: reason,
-        reconnecting: socket.io.reconnecting
-      });
-    });
-
-    // Cleanup on unmount
-    return () => {
-      // Remove event listeners
-      socket.off("connect", handleConnect);
-      socket.off("connect_error", handleConnectError);
-      socket.disconnect();
-    };
-  }, []);
 
   return (
     <Router>
