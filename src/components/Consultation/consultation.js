@@ -79,7 +79,7 @@ function Consultation() {
       minHeight: '100vh',
       background: theme.palette.mode === 'dark'
         ? 'radial-gradient(circle at center, #2a2b4e 0%, #1a1b2e 100%)'
-        : 'radial-gradient(circle at center, #f5f7fa 0%, #c3cfe2 100%)',
+        : 'radial-gradient(circle at center, #ffffff 0%, #ffffff 100%)',
       p: { xs: 2, md: 4 },
       color: theme.palette.text.primary,
       transition: 'all 0.3s ease'

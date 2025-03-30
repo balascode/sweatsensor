@@ -17,9 +17,11 @@ import {
   WaterDrop as HydrationIcon,
   LocalFireDepartment as SodiumIcon,
   Bloodtype as GlucoseIcon,
-  FitnessCenter as LactateIcon
+  FitnessCenter as LactateIcon,
+  BarChart as BarChartIcon
 } from '@mui/icons-material';
-import { Line } from 'react-chartjs-2';
+import { useLocation } from 'react-router-dom';
+import { Line, Bar } from 'react-chartjs-2';
 import { 
   Chart as ChartJS, 
   LineElement, 
@@ -28,22 +30,34 @@ import {
   PointElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  BarElement
 } from 'chart.js';
 
 // Register Chart.js components
-ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Title, Tooltip, Legend);
+ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Title, Tooltip, Legend, BarElement);
 
 function Dashboard({ sweatData }) {
   const theme = useTheme();
+  const location = useLocation();
   const [historicalData, setHistoricalData] = useState({
     sodium: [],
     glucose: [],
     hydration: [],
     lactate: []
   });
+  // const [sweatData, setSweatData] = useState({
+  //   sodium: 0,
+  //   glucose: 0,
+  //   hydration: 0,
+  //   lactate: 0,
+  // });
+  // useEffect(() => {
+  //   if (location.state && location.state.sweatData) {
+  //     setSweatData(location.state.sweatData);
+  //   }
+  // }, [location.state]);
 
-  // Log sweatData to verify updates
   useEffect(() => {
     console.log('Dashboard received sweatData:', sweatData);
     setHistoricalData(prev => ({
@@ -54,13 +68,10 @@ function Dashboard({ sweatData }) {
     }));
   }, [sweatData]);
 
-  // Health score calculation
   const healthScore = Math.round(
     (sweatData.sodium + sweatData.glucose + sweatData.hydration + sweatData.lactate) / 4
   );
-  console.log('Calculated healthScore:', healthScore); // Log healthScore
 
-  // Alerts logic
   const getAlert = () => {
     if (sweatData.sodium > 80) return { severity: "error", message: "High Sodium Levels Detected!" };
     if (sweatData.hydration < 70) return { severity: "warning", message: "Hydration Levels Low!" };
@@ -68,9 +79,9 @@ function Dashboard({ sweatData }) {
     return { severity: "success", message: "Biomarkers Within Optimal Range" };
   };
 
-  // Chart configuration (unchanged for brevity, but works fine)
-  const chartData = {
-    labels: historicalData.sodium.map((_, i) => `${5 - i}m ago`).concat('Now'),
+  // Modified Trend Chart Data
+  const trendChartData = {
+    labels: historicalData.sodium.map((_, i) => i === historicalData.sodium.length - 1 ? 'Now' : `${5 - i}m ago`),
     datasets: [
       { label: "Sodium", data: historicalData.sodium, borderColor: "#ff6b6b", backgroundColor: "rgba(255, 107, 107, 0.2)", tension: 0.4, pointRadius: 4, pointHoverRadius: 6 },
       { label: "Glucose", data: historicalData.glucose, borderColor: "#4ecdc4", backgroundColor: "rgba(78, 205, 196, 0.2)", tension: 0.4, pointRadius: 4, pointHoverRadius: 6 },
@@ -79,7 +90,7 @@ function Dashboard({ sweatData }) {
     ],
   };
 
-  const chartOptions = {
+  const trendChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -88,6 +99,36 @@ function Dashboard({ sweatData }) {
       tooltip: { backgroundColor: theme.palette.background.paper, titleColor: theme.palette.text.primary, bodyColor: theme.palette.text.secondary }
     },
     scales: { x: { ticks: { color: theme.palette.text.secondary } }, y: { ticks: { color: theme.palette.text.secondary } } }
+  };
+
+  // New Current Values Bar Chart Data
+  const currentChartData = {
+    labels: ['Sodium', 'Glucose', 'Hydration', 'Lactate'],
+    datasets: [{
+      label: 'Current Levels',
+      data: [sweatData.sodium, sweatData.glucose, sweatData.hydration, sweatData.lactate],
+      backgroundColor: ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4'],
+      borderColor: ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4'],
+      borderWidth: 1
+    }]
+  };
+
+  const currentChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top', labels: { color: theme.palette.text.primary } },
+      title: { display: true, text: 'Current Biomarker Levels', color: theme.palette.text.primary, font: { size: 18, weight: 'bold' } },
+      tooltip: { backgroundColor: theme.palette.background.paper, titleColor: theme.palette.text.primary, bodyColor: theme.palette.text.secondary }
+    },
+    scales: {
+      x: { ticks: { color: theme.palette.text.secondary } },
+      y: { 
+        ticks: { color: theme.palette.text.secondary },
+        beginAtZero: true,
+        suggestedMax: 100
+      }
+    }
   };
 
   const biomarkerIcons = {
@@ -102,7 +143,7 @@ function Dashboard({ sweatData }) {
       minHeight: '100vh',
       background: theme.palette.mode === 'dark'
         ? 'radial-gradient(circle at center, #2a2b4e 0%, #1a1b2e 100%)'
-        : 'radial-gradient(circle at center, #f5f7fa 0%, #c3cfe2 100%)',
+        : 'radial-gradient(circle at center, #ffffff 0%, #ffffff 100%)',
       p: { xs: 2, md: 4 },
       color: theme.palette.text.primary,
       transition: 'all 0.3s ease'
@@ -153,15 +194,29 @@ function Dashboard({ sweatData }) {
           </Paper>
         </Grid>
 
-        <Grid item xs={12}>
+        <Grid item xs={12} md={6}>
           <Card sx={{ background: theme.palette.mode === 'dark' ? 'linear-gradient(145deg, #2a2b4e, #1a1b2e)' : 'linear-gradient(145deg, #ffffff, #f0f2f5)', borderRadius: 3, boxShadow: theme.palette.mode === 'dark' ? '0 0 20px rgba(0,204,255,0.2)' : '0 8px 24px rgba(0,0,0,0.1)', transition: 'all 0.3s ease', '&:hover': { boxShadow: theme.palette.mode === 'dark' ? '0 0 30px rgba(0,204,255,0.3)' : '0 12px 32px rgba(0,0,0,0.15)' } }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                 <TrendIcon sx={{ mr: 2, color: theme.palette.primary.main, fontSize: 32 }} />
                 <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Trend Analysis</Typography>
               </Box>
-              <Box sx={{ height: { xs: 300, md: 400 } }}>
-                <Line data={chartData} options={chartOptions} />
+              <Box sx={{ height: { xs: 300, md: 400 }, width: {xs: 300, md: 400} }}>
+                <Line data={trendChartData} options={trendChartOptions} />
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Card sx={{ background: theme.palette.mode === 'dark' ? 'linear-gradient(145deg, #2a2b4e, #1a1b2e)' : 'linear-gradient(145deg, #ffffff, #f0f2f5)', borderRadius: 3, boxShadow: theme.palette.mode === 'dark' ? '0 0 20px rgba(0,204,255,0.2)' : '0 8px 24px rgba(0,0,0,0.1)', transition: 'all 0.3s ease', '&:hover': { boxShadow: theme.palette.mode === 'dark' ? '0 0 30px rgba(0,204,255,0.3)' : '0 12px 32px rgba(0,0,0,0.15)' } }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                <BarChartIcon sx={{ mr: 2, color: theme.palette.primary.main, fontSize: 32 }} />
+                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Current Levels</Typography>
+              </Box>
+              <Box sx={{ height: { xs: 300, md: 400 }, width: {xs: 300, md: 400} }}>
+                <Bar data={currentChartData} options={currentChartOptions} />
               </Box>
             </CardContent>
           </Card>
