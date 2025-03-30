@@ -47,17 +47,23 @@ function App() {
     lactate: 0,
   });
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [mode, setMode] = useState('dark'); // Default to dark mode
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // const socket = io("http://localhost:5000");
-const socket = io("https://sweatsensorbackend.vercel.app/");
+// const socket = io("https://sweatsensorbackend.vercel.app/");
+
+const socket = io("https://sweatsensorbackend.onrender.com/", {
+  reconnection: true,
+  reconnectionAttempts: Infinity,
+  reconnectionDelay: 1000,
+  transports: ["websocket"], // Optimize for WebSockets
+});
 
 useEffect(() => {
   console.log("Connecting to socket at:", socket.io.uri);
-  console.log("Socket path:", socket.io.opts.path);
 
   socket.on("connect", () => {
     console.log("Socket connected successfully at:", socket.io.uri);
@@ -68,16 +74,27 @@ useEffect(() => {
     setSweatData(data);
   });
 
-  socket.on("disconnect", () => {
-    console.log("Socket disconnected");
+  socket.on("disconnect", (reason) => {
+    console.log("Socket disconnected due to:", reason);
+  });
+
+  socket.on("reconnect", (attempt) => {
+    console.log("Reconnected after", attempt, "attempts");
+  });
+
+  socket.on("connect_error", (error) => {
+    console.log("Connection error:", error.message);
   });
 
   return () => {
     socket.off("sweatData");
     socket.off("connect");
     socket.off("disconnect");
+    socket.off("reconnect");
+    socket.off("connect_error");
   };
 }, []);
+
 
   // Theme creation
   const colorMode = useMemo(
