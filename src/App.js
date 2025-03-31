@@ -17,6 +17,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import Dashboard from './pages/dashboard';
 import Consultation from './pages/consultation';
 import Home from './pages/home';
+import Reports from './pages/reports';
 import SignIn from './components/Authentication/signIn';
 import SignUp from './components/Authentication/signUp';
 import PrivateRoute from './components/Authentication/privateRoute';
@@ -144,7 +145,7 @@ const socket = io('https://sweatsensorbackend.onrender.com/', {
                     path="/dashboard"
                     element={
                       <PrivateRoute>
-                        <Dashboard/>
+                        <Dashboard sweatData={sweatData}/>
                       </PrivateRoute>
                     }
                   />
@@ -160,7 +161,7 @@ const socket = io('https://sweatsensorbackend.onrender.com/', {
                     path="/reports"
                     element={
                       <PrivateRoute>
-                        <Typography>Reports (Under Construction)</Typography>
+                        <Reports />
                       </PrivateRoute>
                     }
                   />

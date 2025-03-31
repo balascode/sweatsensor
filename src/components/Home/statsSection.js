@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
-import { Box, Card, Container, Grid, Typography, Zoom, useTheme } from '@mui/material';
+import { Box, Card, Container, Typography, Zoom, useTheme } from '@mui/material';
 import { Analytics as AnalyticsIcon, WaterDrop as HydrationIcon, MonitorHeartOutlined as HealthIcon, BoltOutlined as EnergyIcon } from '@mui/icons-material';
 
 const CounterAnimation = ({ end, label, icon, delay = 0 }) => {
   const theme = useTheme();
   const [count, setCount] = React.useState(0);
-
+  
   useEffect(() => {
     const interval = setInterval(() => {
       setCount(prev => {
@@ -16,12 +16,13 @@ const CounterAnimation = ({ end, label, icon, delay = 0 }) => {
     }, 30);
     return () => clearInterval(interval);
   }, [end]);
-
+  
   return (
     <Zoom in={true} style={{ transitionDelay: `${delay}ms` }}>
       <Card
         elevation={6}
         sx={{
+          width: '100%',
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
@@ -64,7 +65,7 @@ const CounterAnimation = ({ end, label, icon, delay = 0 }) => {
 
 const StatsSection = ({ featuresRef }) => {
   const theme = useTheme();
-
+  
   return (
     <Box
       sx={{
@@ -86,20 +87,42 @@ const StatsSection = ({ featuresRef }) => {
       ref={featuresRef}
     >
       <Container maxWidth="lg">
-        <Grid container spacing={4}>
-          <Grid item xs={12} md={3} sm={6}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'space-between',
+            margin: { xs: -1, sm: -2 }
+          }}
+        >
+          <Box sx={{ 
+            flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 32px)', md: '1 1 calc(25% - 32px)' },
+            padding: { xs: 1, sm: 2 },
+            marginBottom: { xs: 2, md: 0 }
+          }}>
             <CounterAnimation end={98} label="Accuracy Rate" icon={<AnalyticsIcon fontSize="large" />} delay={0} />
-          </Grid>
-          <Grid item xs={12} md={3} sm={6}>
+          </Box>
+          <Box sx={{ 
+            flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 32px)', md: '1 1 calc(25% - 32px)' },
+            padding: { xs: 1, sm: 2 },
+            marginBottom: { xs: 2, md: 0 }
+          }}>
             <CounterAnimation end={150} label="Active Users" icon={<HydrationIcon fontSize="large" />} delay={200} />
-          </Grid>
-          <Grid item xs={12} md={3} sm={6}>
+          </Box>
+          <Box sx={{ 
+            flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 32px)', md: '1 1 calc(25% - 32px)' },
+            padding: { xs: 1, sm: 2 },
+            marginBottom: { xs: 2, sm: 2, md: 0 }
+          }}>
             <CounterAnimation end={5} label="Health Markers" icon={<HealthIcon fontSize="large" />} delay={400} />
-          </Grid>
-          <Grid item xs={12} md={3} sm={6}>
+          </Box>
+          <Box sx={{ 
+            flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 32px)', md: '1 1 calc(25% - 32px)' },
+            padding: { xs: 1, sm: 2 }
+          }}>
             <CounterAnimation end={24} label="Hour Monitoring" icon={<EnergyIcon fontSize="large" />} delay={600} />
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       </Container>
     </Box>
   );

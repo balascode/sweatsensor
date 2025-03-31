@@ -5,6 +5,6 @@ function ConsultationPage() {
     return (
     <Consultation />
     );
-    } 
+} 
 
 export default ConsultationPage;
