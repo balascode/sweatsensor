@@ -41,18 +41,14 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 
 const Navbar = ({ colorMode, mode }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
   const { currentUser, signout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  
-  // Set initial collapse state based on screen size
-  useEffect(() => {
-    setIsCollapsed(isTablet && !isMobile);
-  }, [isTablet, isMobile]);
+
 
   // Function to extract username from email
   const getUsernameFromEmail = (email) => {

@@ -29,24 +29,107 @@ function SignUp() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { signup } = useAuth();
   const navigate = useNavigate();
 
+  // Email validation regex - checks for @ and . in the email
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // Password validation - checks if password is at least 8 characters
+  const validatePassword = (password) => {
+    return password.length >= 8;
+  };
+
+  const handleEmailChange = (e) => {
+    const newEmail = e.target.value;
+    setEmail(newEmail);
+    
+    if (newEmail && !validateEmail(newEmail)) {
+      setEmailError('Please enter a valid email address');
+    } else {
+      setEmailError('');
+    }
+  };
+
+  const handlePasswordChange = (e) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+    
+    if (newPassword && !validatePassword(newPassword)) {
+      setPasswordError('Password must be at least 8 characters long');
+    } else {
+      setPasswordError('');
+    }
+
+    // Check if confirm password still matches
+    if (confirmPassword && newPassword !== confirmPassword) {
+      setConfirmPasswordError('Passwords do not match');
+    } else if (confirmPassword) {
+      setConfirmPasswordError('');
+    }
+  };
+
+  const handleConfirmPasswordChange = (e) => {
+    const newConfirmPassword = e.target.value;
+    setConfirmPassword(newConfirmPassword);
+    
+    if (newConfirmPassword && newConfirmPassword !== password) {
+      setConfirmPasswordError('Passwords do not match');
+    } else {
+      setConfirmPasswordError('');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate all fields before submission
+    let hasError = false;
+    
+    if (!validateEmail(email)) {
+      setEmailError('Please enter a valid email address');
+      hasError = true;
+    }
+    
+    if (!validatePassword(password)) {
+      setPasswordError('Password must be at least 8 characters long');
+      hasError = true;
+    }
+    
     if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+      setConfirmPasswordError('Passwords do not match');
+      hasError = true;
+    }
+    
+    if (hasError) {
       return;
     }
+    
     try {
       setError('');
       await signup(email, password);
       navigate('/');
     } catch (err) {
-      setError('Failed to create an account.');
       console.error(err);
+      
+      // Check for error code or message that indicates the email is already in use
+      // Firebase example: err.code === 'auth/email-already-in-use'
+      // This needs to be adapted based on your authentication provider
+      if (err.code === 'auth/email-already-in-use' || 
+          (err.message && err.message.includes('email already in use'))) {
+        setError('An account with this email already exists. Please log in instead.');
+        setEmailError('Email address already in use');
+      } else {
+        setError('Failed to create an account. Please try again.');
+      }
     }
   };
 
@@ -82,6 +165,13 @@ function SignUp() {
           <Alert 
             severity="error" 
             sx={{ mb: 3, borderRadius: 1 }}
+            action={
+              error.includes('already exists') ? (
+                <Button color="inherit" size="small" onClick={() => navigate('/signin')}>
+                  Log In
+                </Button>
+              ) : undefined
+            }
           >
             {error}
           </Alert>
@@ -93,14 +183,16 @@ function SignUp() {
             label="Email Address"
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={handleEmailChange}
             required
+            error={!!emailError}
+            helperText={emailError}
             sx={{ mb: 3 }}
             variant="outlined"
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <EmailIcon color="primary" />
+                  <EmailIcon color={emailError ? "error" : "primary"} />
                 </InputAdornment>
               ),
             }}
@@ -111,14 +203,16 @@ function SignUp() {
             label="Password"
             type={showPassword ? 'text' : 'password'}
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={handlePasswordChange}
             required
+            error={!!passwordError}
+            helperText={passwordError}
             sx={{ mb: 3 }}
             variant="outlined"
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <LockIcon color="primary" />
+                  <LockIcon color={passwordError ? "error" : "primary"} />
                 </InputAdornment>
               ),
               endAdornment: (
@@ -136,14 +230,16 @@ function SignUp() {
             label="Confirm Password"
             type={showConfirmPassword ? 'text' : 'password'}
             value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            onChange={handleConfirmPasswordChange}
             required
+            error={!!confirmPasswordError}
+            helperText={confirmPasswordError}
             sx={{ mb: 4 }}
             variant="outlined"
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <LockIcon color="primary" />
+                  <LockIcon color={confirmPasswordError ? "error" : "primary"} />
                 </InputAdornment>
               ),
               endAdornment: (
@@ -183,40 +279,11 @@ function SignUp() {
             </Typography>
           </Divider>
 
-          {/* <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-            <Button
-              fullWidth
-              variant="outlined"
-              startIcon={<GoogleIcon />}
-              sx={{ 
-                py: 1.5, 
-                borderRadius: 2,
-                textTransform: 'none',
-                fontWeight: 500
-              }}
-            >
-              Sign up with Google
-            </Button>
-            <Button
-              fullWidth
-              variant="outlined"
-              startIcon={<AppleIcon />}
-              sx={{ 
-                py: 1.5, 
-                borderRadius: 2,
-                textTransform: 'none',
-                fontWeight: 500
-              }}
-            >
-              Sign up with Apple
-            </Button>
-          </Box> */}
-
           <Box sx={{ textAlign: 'center', mt: 2 }}>
             <Typography variant="body2" color="text.secondary">
               Already have an account?{' '}
               <Link 
-                href="/login" 
+                href="/signin" 
                 underline="hover"
                 sx={{ fontWeight: 600, color: theme.palette.primary.main }}
               >
