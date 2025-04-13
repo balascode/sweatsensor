@@ -45,7 +45,7 @@ const Navbar = ({ colorMode, mode }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
-  const { currentUser, signout } = useAuth();
+  const { currentUser, signout, signin } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -82,6 +82,15 @@ const Navbar = ({ colorMode, mode }) => {
       console.error('Sign out failed:', err);
     }
   };
+  const handleSignInDemo = async () => {
+    try {
+      await signin('demo@ss.co', '12345678');
+      if (isMobile) setMobileOpen(false);
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('Demo sign-in failed:', err);
+    }
+  };
 
   const scrollToSection = (sectionId) => {
     handleNavClick();
@@ -105,7 +114,7 @@ const Navbar = ({ colorMode, mode }) => {
         { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard', notification: 0 },
         { text: 'Consultation', icon: <ConsultIcon />, path: '/consultation', notification: 0 },
         { text: 'Reports', icon: <ReportIcon />, path: '/reports', notification: 0 },
-        { text: 'Settings', icon: <SettingsIcon />, path: '/settings', notification: 0 },
+        // { text: 'Settings', icon: <SettingsIcon />, path: '/settings', notification: 0 },
       ];
     } else {
       return [
@@ -478,66 +487,99 @@ const Navbar = ({ colorMode, mode }) => {
           </IconButton>
         </Tooltip>
 
-        {/* Sign In/Up Buttons for non-authenticated users */}
-        {!currentUser && (!isCollapsed || isMobile) && (
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <NavLink
-              to="/signin"
-              onClick={handleNavClick}
-              style={{ textDecoration: 'none' }}
-            >
-              <Button
-                variant="contained"
-                size="small"
-                sx={{
-                  background: primaryGradient,
-                  color: '#fff',
-                  px: 2,
-                  py: 0.75,
-                  borderRadius: 20,
-                  fontSize: '0.8rem',
-                  textTransform: 'capitalize',
-                  fontWeight: 500,
-                  '&:hover': {
-                    background: hoverGradient,
-                    boxShadow: `0 4px 10px ${alpha('#00ccff', 0.4)}`,
-                  },
-                }}
-              >
-                Sign In
-              </Button>
-            </NavLink>
 
-            <NavLink
-              to="/signup"
-              onClick={handleNavClick}
-              style={{ textDecoration: 'none' }}
-            >
-              <Button
-                variant="outlined"
-                size="small"
-                sx={{
-                  borderColor: '#00ccff',
-                  color: '#00ccff',
-                  px: 2,
-                  py: 0.75,
-                  borderRadius: 20,
-                  fontSize: '0.8rem',
-                  textTransform: 'capitalize',
-                  fontWeight: 500,
-                  '&:hover': {
-                    background: 'transparent',
-                    borderColor: '#00ffcc',
-                    color: '#00ffcc',
-                    boxShadow: `0 2px 8px ${alpha('#00ccff', 0.3)}`,
-                  },
-                }}
-              >
-                Sign Up
-              </Button>
-            </NavLink>
-          </Box>
-        )}
+{/* Sign In/Up Buttons for non-authenticated users */}
+{!currentUser && (!isCollapsed || isMobile) && (
+  <Box sx={{ 
+    display: 'flex', 
+    gap: 1,
+    flexWrap: 'wrap',
+    justifyContent: 'center'
+  }}>
+    <NavLink
+      to="/signin"
+      onClick={handleNavClick}
+      style={{ textDecoration: 'none' }}
+    >
+      <Button
+        variant="contained"
+        size="small"
+        sx={{
+          background: primaryGradient,
+          color: '#fff',
+          px: 2,
+          py: 0.75,
+          borderRadius: 20,
+          fontSize: '0.8rem',
+          textTransform: 'capitalize',
+          fontWeight: 500,
+          minWidth: '80px',
+          '&:hover': {
+            background: hoverGradient,
+            boxShadow: `0 4px 10px ${alpha('#00ccff', 0.4)}`,
+            transform: 'translateY(-2px)',
+          },
+        }}
+      >
+        Sign In
+      </Button>
+    </NavLink>
+
+    <NavLink
+      to="/signup"
+      onClick={handleNavClick}
+      style={{ textDecoration: 'none' }}
+    >
+      <Button
+        variant="outlined"
+        size="small"
+        sx={{
+          borderColor: '#00ccff',
+          color: '#00ccff',
+          px: 2,
+          py: 0.75,
+          borderRadius: 20,
+          fontSize: '0.8rem',
+          textTransform: 'capitalize',
+          fontWeight: 500,
+          minWidth: '80px',
+          '&:hover': {
+            background: 'transparent',
+            borderColor: '#00ffcc',
+            color: '#00ffcc',
+            boxShadow: `0 2px 8px ${alpha('#00ccff', 0.3)}`,
+            transform: 'translateY(-2px)',
+          },
+        }}
+      >
+        Sign Up
+      </Button>
+    </NavLink>
+    
+    <Button
+      onClick={handleSignInDemo}
+      size="small"
+      sx={{
+        background: createGradient('#ff6b6b', '#ff8e53'),
+        color: '#fff',
+        px: 2,
+        py: 0.75,
+        borderRadius: 20,
+        fontSize: '0.8rem',
+        textTransform: 'capitalize',
+        fontWeight: 500,
+        minWidth: '100px',
+        '&:hover': {
+          background: createGradient('#ff8e53', '#ff6b6b'),
+          boxShadow: `0 4px 10px ${alpha('#ff6b6b', 0.4)}`,
+          transform: 'translateY(-2px)',
+        },
+      }}
+    >
+      Demo Sign In
+    </Button>
+  </Box>
+)}
 
         {/* Logout button for authenticated users in collapsed view */}
         {currentUser && isCollapsed && !isMobile && (
